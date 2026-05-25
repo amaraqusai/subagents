@@ -4,6 +4,10 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const fs = require('fs');
 const path = require('path');
 
+const logger = require('./logger');
+const Gatekeeper = require('./gatekeeper');
+const Watchdog = require('./watchdog');
+
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -12,13 +16,17 @@ const client = new Client({
     ],
 });
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+let genAI;
+if (process.env.GEMINI_API_KEY) {
+    genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+}
+
 const MODEL_NAME = "gemini-2.5-flash"; // Default model
 
 function loadPersona(name) {
     const filePath = path.join(__dirname, '.gemini', 'agents', `${name}.md`);
     if (!fs.existsSync(filePath)) {
-        console.error(`Persona file not found: ${filePath}`);
+        logger.error('DiscordBot', `Persona file not found: ${filePath}`);
         process.exit(1);
     }
     const content = fs.readFileSync(filePath, 'utf8');
@@ -45,6 +53,7 @@ const PERSONAS = {
 
 // Helper to initialize models with specific persona instruction and search grounding
 function getAgentModel(persona, enableSearch = true) {
+    if (!genAI) return null;
     return genAI.getGenerativeModel({
         model: MODEL_NAME,
         systemInstruction: persona.systemPrompt,
@@ -52,9 +61,9 @@ function getAgentModel(persona, enableSearch = true) {
     });
 }
 
-const ronaldoModel = getAgentModel(PERSONAS.ronaldo, true);
-const messiModel = getAgentModel(PERSONAS.messi, true);
-const refereeModel = getAgentModel(PERSONAS.referee, true);
+// Global components
+const watchdog = new Watchdog(45000); // 45 second timeout for model requests
+const gatekeeper = new Gatekeeper('gatekeeper_status.json', 0.50); // $0.50 budget limit
 
 // Clean and parse model JSON response
 function parseModelJson(text) {
@@ -77,21 +86,33 @@ function parseModelJson(text) {
     }
 }
 
-// Call model with retry logic to avoid rate limits
+// Call model with watchdog, gatekeeper, and retry logic to avoid rate limits
 async function callModelWithRetry(model, prompt, maxRetries = 3) {
     let baseDelay = 15000;
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
-            const result = await model.generateContent({
-                contents: [{ role: 'user', parts: [{ text: prompt }] }]
+            // Verify budget before making the call
+            gatekeeper.checkBudget();
+
+            // Run task under watchdog supervision
+            const result = await watchdog.run('model-generation-discord', async () => {
+                const response = await model.generateContent({
+                    contents: [{ role: 'user', parts: [{ text: prompt }] }]
+                });
+                return response;
             });
+
             const text = result.response.text();
             
             // Validate JSON structure
             const parsed = parseModelJson(text);
+
+            // Record token consumption securely in the gatekeeper
+            gatekeeper.recordUsage(result.response.usageMetadata);
+
             return { parsed, text, candidate: result.response.candidates?.[0] };
         } catch (err) {
-            console.warn(`[Warning] Attempt ${attempt}/${maxRetries} failed: ${err.message}`);
+            logger.warn('DiscordBot', `Attempt ${attempt}/${maxRetries} failed: ${err.message}`);
             if (attempt === maxRetries) {
                 throw err;
             }
@@ -126,6 +147,7 @@ function getSearchMetadataString(candidate) {
 let debateActive = false;
 
 client.once('ready', () => {
+    logger.info('DiscordBot', `Discord bot logged in as ${client.user.tag}!`);
     console.log(`Discord bot logged in as ${client.user.tag}!`);
 });
 
@@ -138,7 +160,7 @@ client.on('messageCreate', async (message) => {
             return message.reply("⚠️ A debate is already in progress!");
         }
 
-        // Allow user to specify turns, default to 10 (at least 10 turns per side)
+        // Allow user to specify turns, default to 10
         let turns = parseInt(parts[1], 10) || 10;
         if (turns < 1) turns = 1;
         if (turns > 15) {
@@ -152,7 +174,13 @@ client.on('messageCreate', async (message) => {
         let lastResponse = null;
         let opponentDetectedLies = [];
 
+        logger.info('DiscordBot', 'Starting Discord GOAT debate', { turns, channelId: message.channel.id });
+
         await message.channel.send(`⚽ **The GOAT Debate Starts Now!** ⚽\n*Flow: Child $\\rightarrow$ Judge $\\rightarrow$ Child*\n*Duration: ${turns} turns per side | Model: ${MODEL_NAME}*`);
+
+        const ronaldoModel = getAgentModel(PERSONAS.ronaldo, true);
+        const messiModel = getAgentModel(PERSONAS.messi, true);
+        const refereeModel = getAgentModel(PERSONAS.referee, true);
 
         try {
             // Referee starts the debate
@@ -268,8 +296,10 @@ client.on('messageCreate', async (message) => {
             await message.channel.send(verdictMsg);
             await message.channel.send("🏁 **The Debate has officially closed!** 🏁");
 
+            logger.info('DiscordBot', 'Discord debate completed successfully', { winner: finalData.winner });
+
         } catch (err) {
-            console.error("Error during Discord debate orchestration:", err);
+            logger.error('DiscordBot', `Error during Discord debate orchestration: ${err.message}`);
             await message.channel.send(`❌ **Orchestration Error:** ${err.message}. The debate has been aborted.`);
         } finally {
             debateActive = false;
@@ -277,6 +307,9 @@ client.on('messageCreate', async (message) => {
     }
 });
 
-client.login(process.env.DISCORD_TOKEN).catch(err => {
-    console.error("Failed to login to Discord:", err.message);
-});
+if (require.main === module) {
+    client.login(process.env.DISCORD_TOKEN).catch(err => {
+        logger.error('DiscordBot', `Failed to login to Discord: ${err.message}`);
+        console.error("Failed to login to Discord:", err.message);
+    });
+}

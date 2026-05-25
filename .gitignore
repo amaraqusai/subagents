@@ -1,2 +1,6 @@
 node_modules
 .env
+logs/
+gatekeeper_status.json
+test_logs/
+test_gatekeeper_status.json

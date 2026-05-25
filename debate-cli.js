@@ -3,6 +3,11 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const fs = require('fs');
 const path = require('path');
 
+const logger = require('./logger');
+const Gatekeeper = require('./gatekeeper');
+const Watchdog = require('./watchdog');
+const { showTerminalMenu } = require('./menu');
+
 // CLI Arguments parsing
 const args = process.argv.slice(2);
 let turns = 10; // Default 10 turns per side
@@ -22,17 +27,16 @@ for (let i = 0; i < args.length; i++) {
     }
 }
 
-if (!process.env.GEMINI_API_KEY) {
-    console.error("\x1b[31m[Error] GEMINI_API_KEY is not set in your .env file.\x1b[0m");
-    process.exit(1);
+let genAI;
+if (process.env.GEMINI_API_KEY) {
+    genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 }
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // Load agent persona configurations
 function loadPersona(name) {
     const filePath = path.join(__dirname, '.gemini', 'agents', `${name}.md`);
     if (!fs.existsSync(filePath)) {
+        logger.error('CLI', `Persona file not found: ${filePath}`);
         console.error(`\x1b[31m[Error] Persona file not found: ${filePath}\x1b[0m`);
         process.exit(1);
     }
@@ -60,6 +64,7 @@ const PERSONAS = {
 
 // Initialize Gemini models with appropriate system instruction and search grounding
 function getAgentModel(persona, enableSearch = true) {
+    if (!genAI) return null;
     return genAI.getGenerativeModel({
         model: selectedModel,
         systemInstruction: persona.systemPrompt,
@@ -67,9 +72,9 @@ function getAgentModel(persona, enableSearch = true) {
     });
 }
 
-const ronaldoModel = getAgentModel(PERSONAS.ronaldo, true);
-const messiModel = getAgentModel(PERSONAS.messi, true);
-const refereeModel = getAgentModel(PERSONAS.referee, true); // Referee also has search grounding to verify stats
+// Global components
+const watchdog = new Watchdog(45000); // 45 second timeout for model requests
+const gatekeeper = new Gatekeeper('gatekeeper_status.json', 0.50); // $0.50 budget limit
 
 // Robust JSON extraction and parsing
 function parseModelJson(text) {
@@ -92,20 +97,33 @@ function parseModelJson(text) {
     }
 }
 
-// Call model with retry mechanism for quota limits and parsing failures
+// Call model with watchdog, gatekeeper, and retry mechanisms
 async function callModelWithRetry(model, prompt, maxRetries = 3) {
     let baseDelay = 15000;
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
-            const result = await model.generateContent({
-                contents: [{ role: 'user', parts: [{ text: prompt }] }]
+            // Verify budget before making the call
+            gatekeeper.checkBudget();
+
+            // Run task under watchdog supervision
+            const result = await watchdog.run('model-generation', async () => {
+                const response = await model.generateContent({
+                    contents: [{ role: 'user', parts: [{ text: prompt }] }]
+                });
+                return response;
             });
+
             const text = result.response.text();
             
             // Validate JSON structure
             const parsed = parseModelJson(text);
+
+            // Record token consumption securely in the gatekeeper
+            gatekeeper.recordUsage(result.response.usageMetadata);
+
             return { parsed, text, candidate: result.response.candidates?.[0] };
         } catch (err) {
+            logger.warn('CLI', `Attempt ${attempt}/${maxRetries} failed: ${err.message}`);
             console.warn(`\n\x1b[33m[Warning] Attempt ${attempt}/${maxRetries} failed: ${err.message}\x1b[0m`);
             if (attempt === maxRetries) {
                 throw err;
@@ -137,6 +155,17 @@ function printGroundingInfo(candidate) {
 }
 
 async function startDebate() {
+    if (!process.env.GEMINI_API_KEY) {
+        console.error("\x1b[31m[Error] GEMINI_API_KEY is not set in your .env file.\x1b[0m");
+        return;
+    }
+
+    const ronaldoModel = getAgentModel(PERSONAS.ronaldo, true);
+    const messiModel = getAgentModel(PERSONAS.messi, true);
+    const refereeModel = getAgentModel(PERSONAS.referee, true);
+
+    logger.info('CLI', 'Starting live GOAT debate', { turns, model: selectedModel });
+
     console.log("\n========================================================");
     console.log("⚽ \x1b[1m\x1b[32mThe GOAT Debate Starts Now! (Judge Routing & JSON Protocol)\x1b[0m ⚽");
     console.log(`  Turns: ${turns} per side | Model: ${selectedModel} | Delay: ${delaySeconds}s`);
@@ -197,7 +226,6 @@ async function startDebate() {
 
         // Check if they tried to bluff/lie
         if (childData.intent_to_bluff_or_lie) {
-            // Note: In CLI, we can output a developer trace of the bluff
             console.log(`  \x1b[90m⚡ [Developer Trace] ${speakerName} is BLUFFING/LYING: "${childData.bluff_or_lie_details}"\x1b[0m\n`);
         }
 
@@ -278,8 +306,81 @@ async function startDebate() {
     console.log("\n========================================================");
     console.log("🏁 \x1b[1mDebate Closed!\x1b[0m 🏁");
     console.log("========================================================\n");
+
+    logger.info('CLI', 'Live GOAT debate finished successfully', { winner: finalData.winner });
 }
 
-startDebate().catch(err => {
-    console.error("\x1b[31mFatal Error during debate:\x1b[0m", err);
-});
+function showMenuAndRun() {
+    const options = [
+        "1. Run Live Debate (Gemini API)",
+        "2. Run Mock-grounded Simulation (Offline)",
+        "3. View Gatekeeper Token & Cost Status",
+        "4. Run Unit Tests (TDD)",
+        "5. Reset Gatekeeper Budget",
+        "6. Exit"
+    ];
+
+    showTerminalMenu("GOAT DEBATE SYSTEM MENU", options, async (selection) => {
+        if (selection === 0) {
+            console.clear();
+            await startDebate().catch(err => {
+                logger.error('CLI', 'Fatal error during debate', { error: err.message });
+                console.error("\x1b[31mFatal Error during debate:\x1b[0m", err);
+            });
+            console.log("\nPress Enter to return to menu...");
+            process.stdin.once('data', () => showMenuAndRun());
+        } else if (selection === 1) {
+            console.clear();
+            try {
+                // Remove cached module so we can run it multiple times in the same session
+                delete require.cache[require.resolve('./verify_debate_flow')];
+                require('./verify_debate_flow');
+            } catch (e) {
+                console.error("Error running mock simulation:", e.message);
+            }
+            console.log("\nPress Enter to return to menu...");
+            process.stdin.once('data', () => showMenuAndRun());
+        } else if (selection === 2) {
+            console.clear();
+            const gk = new Gatekeeper();
+            console.log("\n========================================================");
+            console.log("💰 GATEKEEPER BUDGET STATUS 💰");
+            console.log("========================================================\n");
+            console.log(`Prompt Tokens:      ${gk.promptTokens}`);
+            console.log(`Candidates Tokens:  ${gk.candidatesTokens}`);
+            console.log(`Total Tokens:       ${gk.totalTokens}`);
+            console.log(`Estimated Cost:     $${gk.estimatedCostUSD.toFixed(6)}`);
+            console.log(`Budget Limit:       $${gk.budgetLimitUSD.toFixed(4)}`);
+            console.log(`Status:             ${gk.estimatedCostUSD >= gk.budgetLimitUSD ? "\x1b[31mEXCEEDED (BLOCKED)\x1b[0m" : "\x1b[32mOK\x1b[0m"}`);
+            console.log("\n========================================================");
+            console.log("\nPress Enter to return to menu...");
+            process.stdin.once('data', () => showMenuAndRun());
+        } else if (selection === 3) {
+            console.clear();
+            console.log("Running npm test...\n");
+            const { execSync } = require('child_process');
+            try {
+                execSync('npm test', { stdio: 'inherit' });
+            } catch (e) {
+                console.error("Some tests failed.");
+            }
+            console.log("\nPress Enter to return to menu...");
+            process.stdin.once('data', () => showMenuAndRun());
+        } else if (selection === 4) {
+            console.clear();
+            const gk = new Gatekeeper();
+            gk.resetStatus();
+            console.log("Gatekeeper budget statistics reset to 0.");
+            console.log("\nPress Enter to return to menu...");
+            process.stdin.once('data', () => showMenuAndRun());
+        } else if (selection === 5) {
+            console.log("Goodbye!");
+            process.exit(0);
+        }
+    });
+}
+
+// Run menu if executed directly from CLI
+if (require.main === module) {
+    showMenuAndRun();
+}
