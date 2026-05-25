@@ -1,6 +1,7 @@
 # 📝 Project TODO List
 
 ## High Priority
+- [x] **Switch to Free Tier:** Changed model to `gemini-2.5-flash` for free tier usage.
 - [ ] **Dynamic Debate Length:** Allow users to specify the number of turns (e.g., `!debate 10`).
 - [ ] **Agent Personalities:** Add more fans (e.g., Neymar, Mbappé, or Pelé fans).
 - [ ] **Error Handling:** Add better error logging for API failures or Discord connection issues.

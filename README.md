@@ -40,7 +40,7 @@ node index.js
 
 ### In Discord
 Once the bot is online, type the following in any channel:
-- `!debate`: Starts a 6-turn back-and-forth debate between the Ronaldo and Messi fans.
+- `!debate`: Starts a back-and-forth debate between the Ronaldo and Messi fans (at least 5 pings per side).
 
 ### In Gemini CLI
 If you have the Gemini CLI installed, you can interact with the personas directly:
