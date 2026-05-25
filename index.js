@@ -14,7 +14,15 @@ const client = new Client({
 });
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+const MODEL_NAME = "gemini-2.5-flash";
+let model;
+
+try {
+    model = genAI.getGenerativeModel({ model: MODEL_NAME });
+    console.log(`Model initialized: ${MODEL_NAME}`);
+} catch (err) {
+    console.error(`Failed to initialize model ${MODEL_NAME}:`, err.message);
+}
 
 function loadPersona(name) {
     const filePath = path.join(__dirname, '.gemini', 'agents', `${name}.md`);
@@ -42,9 +50,14 @@ const PERSONAS = {
 };
 
 async function getResponse(persona, conversationHistory) {
-    const prompt = `${persona.systemPrompt}\n\nConversation History:\n${conversationHistory}\n\nYour next response:`;
-    const result = await model.generateContent(prompt);
-    return result.response.text();
+    try {
+        const prompt = `${persona.systemPrompt}\n\nConversation History:\n${conversationHistory}\n\nYour next response:`;
+        const result = await model.generateContent(prompt);
+        return result.response.text();
+    } catch (err) {
+        console.error("Error getting response:", err.message);
+        return "Sorry, I'm having trouble thinking right now. (API Error)";
+    }
 }
 
 let debateActive = false;
@@ -92,4 +105,7 @@ client.on('messageCreate', async (message) => {
     }
 });
 
-client.login(process.env.DISCORD_TOKEN);
+client.login(process.env.DISCORD_TOKEN).catch(err => {
+    console.error("Failed to login to Discord:", err.message);
+    process.exit(1);
+});
