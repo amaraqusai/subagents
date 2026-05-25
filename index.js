@@ -21,7 +21,7 @@ if (process.env.GEMINI_API_KEY) {
     genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 }
 
-const MODEL_NAME = "gemini-2.5-flash"; // Default model
+const MODEL_NAME = "gemini-2.5-flash-lite"; // Default to 2.5-flash-lite to avoid daily 2.5-flash rate limits
 
 function loadPersona(name) {
     const filePath = path.join(__dirname, '.gemini', 'agents', `${name}.md`);

@@ -12,7 +12,7 @@ const { showTerminalMenu } = require('./menu');
 const args = process.argv.slice(2);
 let turns = 10; // Default 10 turns per side
 let delaySeconds = 15; // Default 15s delay to prevent quota issues
-let selectedModel = "gemini-2.5-flash"; // Default to 2.5-flash
+let selectedModel = "gemini-2.5-flash-lite"; // Default to 2.5-flash-lite to avoid daily 2.5-flash rate limits
 
 for (let i = 0; i < args.length; i++) {
     if (args[i] === '--turns' || args[i] === '-t') {
