@@ -11,5 +11,5 @@
 - [ ] **Voice Support:** Use Text-to-Speech (TTS) to have the agents "speak" in a voice channel.
 
 ## Refactoring
-- [ ] **Modularize Personas:** Move persona definitions in `index.js` to external JSON or Markdown files for easier editing.
+- [x] **Modularize Personas:** Move persona definitions in `index.js` to external JSON or Markdown files for easier editing. (Completed with Referee integration)
 - [ ] **TypeScript Conversion:** Rewrite the bot in TypeScript for better type safety and maintainability.

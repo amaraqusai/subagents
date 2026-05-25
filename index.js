@@ -2,6 +2,9 @@ require('dotenv').config();
 const { Client, GatewayIntentBits } = require('discord.js');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
+const fs = require('fs');
+const path = require('path');
+
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -11,17 +14,31 @@ const client = new Client({
 });
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+function loadPersona(name) {
+    const filePath = path.join(__dirname, '.gemini', 'agents', `${name}.md`);
+    const content = fs.readFileSync(filePath, 'utf8');
+    
+    // Simple parser for the markdown format
+    const match = content.match(/---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)/);
+    if (!match) return { name: name, systemPrompt: content };
+
+    const body = match[2].trim();
+    const frontmatter = match[1];
+    const nameMatch = frontmatter.match(/name:\s*(.*)/);
+    const displayName = nameMatch ? nameMatch[1].trim() : name;
+
+    return {
+        name: displayName,
+        systemPrompt: body
+    };
+}
 
 const PERSONAS = {
-    ronaldo: {
-        name: "Ronaldo Fan",
-        systemPrompt: "You are the ultimate Cristiano Ronaldo fan. Prove he is the GOAT. Focus on goals, CL, mentality, and physical conditioning. Be passionate and dismissive of Messi. Keep it short.",
-    },
-    messi: {
-        name: "Messi Fan",
-        systemPrompt: "You are the ultimate Lionel Messi fan. Prove he is the GOAT. Focus on talent, vision, playmaking, and the World Cup. Be passionate and dismissive of Ronaldo. Keep it short.",
-    }
+    ronaldo: loadPersona('ronaldo-fan'),
+    messi: loadPersona('messi-fan'),
+    referee: loadPersona('referee')
 };
 
 async function getResponse(persona, conversationHistory) {
@@ -65,8 +82,13 @@ client.on('messageCreate', async (message) => {
             await new Promise(resolve => setTimeout(resolve, 2000));
         }
 
+        // Final verdict from the referee
+        message.channel.send("⚖️ **The Referee is weighing the arguments...** ⚖️");
+        const refereeResponse = await getResponse(PERSONAS.referee, history.join('\n') + "\n\nReferee, please declare the winner based on the debate above.");
+        await message.channel.send(`**The Referee:** ${refereeResponse}`);
+
         debateActive = false;
-        message.channel.send("🏁 **The debate has ended. You decide!** 🏁");
+        message.channel.send("🏁 **The verdict is in!** 🏁");
     }
 });
 
