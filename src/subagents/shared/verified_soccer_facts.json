@@ -1,0 +1,58 @@
+[
+  {
+    "keyword": "champions league goals",
+    "truthfulness_score": 1.0,
+    "tags": ["pro"],
+    "source_url": "https://www.uefa.com/uefachampionsleague/history/stats/",
+    "content": "Cristiano Ronaldo is the all-time UEFA Champions League top goalscorer with 140 official goals."
+  },
+  {
+    "keyword": "world cup 2022",
+    "truthfulness_score": 1.0,
+    "tags": ["con"],
+    "source_url": "https://www.fifa.com/fifaplus/en/tournaments/mens/worldcup/qatar2022",
+    "content": "Lionel Messi led Argentina to victory in the 2022 FIFA World Cup, winning the Golden Ball award."
+  },
+  {
+    "keyword": "ballon d'or",
+    "truthfulness_score": 1.0,
+    "tags": ["con"],
+    "source_url": "https://www.francefootball.fr/ballon-d-or/",
+    "content": "Lionel Messi holds the historical record with 8 Ballon d'Or awards. Cristiano Ronaldo has won 5."
+  },
+  {
+    "keyword": "league titles",
+    "truthfulness_score": 1.0,
+    "tags": ["pro"],
+    "source_url": "https://www.transfermarkt.com/",
+    "content": "Cristiano Ronaldo has won league trophies in England (Premier League), Spain (La Liga), and Italy (Serie A)."
+  },
+  {
+    "keyword": "assists",
+    "truthfulness_score": 1.0,
+    "tags": ["con"],
+    "source_url": "https://www.transfermarkt.com/",
+    "content": "Lionel Messi holds the record for most official assists in football history, exceeding 360 assists."
+  },
+  {
+    "keyword": "olympic gold",
+    "truthfulness_score": 1.0,
+    "tags": ["con"],
+    "source_url": "https://olympics.com/en/athletes/lionel-messi",
+    "content": "Lionel Messi won Olympic Gold with Argentina at the 2008 Beijing Olympics."
+  },
+  {
+    "keyword": "penalty goals",
+    "truthfulness_score": 0.9,
+    "tags": ["con"],
+    "source_url": "https://www.transfermarkt.com/",
+    "content": "Cristiano Ronaldo has scored over 160 official penalties, the highest penalty goalcount in football history."
+  },
+  {
+    "keyword": "900+ official goals",
+    "truthfulness_score": 1.0,
+    "tags": ["pro"],
+    "source_url": "https://www.fifa.com/",
+    "content": "Cristiano Ronaldo is the leading goalscorer in official football history, exceeding 900 career goals."
+  }
+]

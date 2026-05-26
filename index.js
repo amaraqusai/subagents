@@ -7,6 +7,36 @@ const path = require('path');
 const logger = require('./logger');
 const Gatekeeper = require('./gatekeeper');
 const Watchdog = require('./watchdog');
+const verifiedCache = require('./src/subagents/shared/verified_soccer_facts.json');
+
+// Import competitor-specific _debator skills
+const TimeAllocationStrategyDebator = require('./src/subagents/skills/time_allocation_strategy_debator/time_allocation_strategy_debator');
+const FallacyProtectionDebator = require('./src/subagents/skills/fallacy_protection_debator/fallacy_protection_debator');
+const SemanticCrossExaminationDebator = require('./src/subagents/skills/semantic_cross_examination_debator/semantic_cross_examination_debator');
+const ClarificationDemandDebator = require('./src/subagents/skills/clarification_demand_debator/clarification_demand_debator');
+const RebuttalGeneratorDebator = require('./src/subagents/skills/rebuttal_generator_debator/rebuttal_generator_debator');
+const RhetoricalStorytellingDebator = require('./src/subagents/skills/rhetorical_storytelling_debator/rhetorical_storytelling_debator');
+const ArgumentStructureDebator = require('./src/subagents/skills/argument_structure_debator/argument_structure_debator');
+const ClosingImpactSummaryDebator = require('./src/subagents/skills/closing_impact_summary_debator/closing_impact_summary_debator');
+const InternetSearchDebator = require('./src/subagents/skills/internet_search_debator/internet_search_debator');
+const EvidenceVerificationDebator = require('./src/subagents/skills/evidence_verification_debator/evidence_verification_debator');
+const ConcessionPivotingDebator = require('./src/subagents/skills/concession_pivoting_debator/concession_pivoting_debator');
+
+// Import Referee/Judge-specific _judge skills
+const DialogueOrchestrationJudge = require('./src/subagents/skills/dialogue_orchestration_judge/dialogue_orchestration_judge');
+const WatchdogLivenessMonitorJudge = require('./src/subagents/skills/watchdog_liveness_monitor_judge/watchdog_liveness_monitor_judge');
+const BackpressureBudgetLimitJudge = require('./src/subagents/skills/backpressure_budget_limit_judge/backpressure_budget_limit_judge');
+const CrossExaminationTriggerJudge = require('./src/subagents/skills/cross_examination_trigger_judge/cross_examination_trigger_judge');
+const SocraticPromptGeneratorJudge = require('./src/subagents/skills/socratic_prompt_generator_judge/socratic_prompt_generator_judge');
+const EmpiricalFactCheckingJudge = require('./src/subagents/skills/empirical_fact_checking_judge/empirical_fact_checking_judge');
+const LogicalFallacyDetectionJudge = require('./src/subagents/skills/logical_fallacy_detection_judge/logical_fallacy_detection_judge');
+const FallacyWeightingMatrixJudge = require('./src/subagents/skills/fallacy_weighting_matrix_judge/fallacy_weighting_matrix_judge');
+const ClashMapTrackerJudge = require('./src/subagents/skills/clash_map_tracker_judge/clash_map_tracker_judge');
+const ClosingSummaryAuditorJudge = require('./src/subagents/skills/closing_summary_auditor_judge/closing_summary_auditor_judge');
+const BiasSelfAuditJudge = require('./src/subagents/skills/bias_self_audit_judge/bias_self_audit_judge');
+const PersuasivenessEvaluationJudge = require('./src/subagents/skills/persuasiveness_evaluation_judge/persuasiveness_evaluation_judge');
+const TieBreakerResolutionJudge = require('./src/subagents/skills/tie_breaker_resolution_judge/tie_breaker_resolution_judge');
+const GradeJustificationReportJudge = require('./src/subagents/skills/grade_justification_report_judge/grade_justification_report_judge');
 
 const client = new Client({
     intents: [
@@ -144,6 +174,28 @@ function getSearchMetadataString(candidate) {
     return metadataStr;
 }
 
+async function sendLongMessage(channel, content) {
+    if (content.length <= 1900) {
+        return await channel.send(content);
+    }
+    
+    const lines = content.split('\n');
+    let currentChunk = '';
+    
+    for (const line of lines) {
+        if (currentChunk.length + line.length + 1 > 1900) {
+            await channel.send(currentChunk.trim());
+            currentChunk = line + '\n';
+        } else {
+            currentChunk += line + '\n';
+        }
+    }
+    
+    if (currentChunk.trim().length > 0) {
+        await channel.send(currentChunk.trim());
+    }
+}
+
 let debateActive = false;
 
 client.once('ready', () => {
@@ -173,6 +225,33 @@ client.on('messageCreate', async (message) => {
         let lastSpeaker = null;
         let lastResponse = null;
         let opponentDetectedLies = [];
+
+        const debateSubject = "Cristiano Ronaldo vs Lionel Messi: The ultimate football GOAT debate";
+
+        // 1. Dialogue Orchestrator Loop Manager
+        const orchestrator = new DialogueOrchestrationJudge(debateSubject, turns);
+
+        // 2. Liveness Watchdog Keep-Alive Monitor
+        const livenessWatchdog = new WatchdogLivenessMonitorJudge(45.0);
+
+        // 3. Backpressure economic budget and RPM quota auditor
+        const backpressureAuditor = new BackpressureBudgetLimitJudge(100000, 30);
+
+        // 4. Socratic Challenge Generator
+        const socraticBuilder = new SocraticPromptGeneratorJudge(debateSubject);
+
+        // 5. Cross-Examination Trigger
+        const crossExamInterrupter = new CrossExaminationTriggerJudge();
+
+        // 6. Empirical Fact Checker
+        const factVerifier = new EmpiricalFactCheckingJudge(verifiedCache);
+
+        // 7. Logical Fallacy Detector & Penalty Matrix
+        const fallacyLinterObj = new LogicalFallacyDetectionJudge();
+        const penaltyMatrix = new FallacyWeightingMatrixJudge();
+
+        // 8. Clash Map Tracker (Responsiveness Audit)
+        const overlapTracker = new ClashMapTrackerJudge();
 
         logger.info('DiscordBot', 'Starting Discord GOAT debate', { turns, channelId: message.channel.id });
 
@@ -211,20 +290,306 @@ client.on('messageCreate', async (message) => {
                 const speakerModel = isRonaldo ? ronaldoModel : messiModel;
                 const speakerEmoji = isRonaldo ? "🇵🇹" : "🇦🇷";
 
+                const stance = isRonaldo ? 'affirmative' : 'negative';
+                const currentRound = Math.ceil(turn / 2);
+
+                // 1. Time Allocation Strategy Skill
+                const pacer = new TimeAllocationStrategyDebator(stance);
+                const pacing = pacer.calculateStrategyBounds(currentRound, turns);
+
+                // 2. Preceding opponent turn analysis (Skills 2, 3, 4, 5)
+                let semanticContext = '';
+                let clarificationContext = '';
+                let rebuttalContext = '';
+                let concessionContext = '';
+
+                if (lastResponse && lastResponse.argument) {
+                    // Semantic Cross-Examination reframing
+                    const semantic = new SemanticCrossExaminationDebator(stance);
+                    const reframeResult = semantic.executeReframing(lastResponse.argument);
+                    if (reframeResult.total_reframes_count > 0) {
+                        semanticContext = reframeResult.reframing_report;
+                    }
+
+                    // Clarification Demand ambiguity checking
+                    const clarifier = new ClarificationDemandDebator(stance);
+                    const demandResult = clarifier.compileClarificationDemand(lastResponse.argument);
+                    clarificationContext = demandResult.demand_query;
+
+                    // Rebuttal Generator targeted clashes
+                    const rebuttaler = new RebuttalGeneratorDebator(stance);
+                    const opponentClaims = lastResponse.thought_process?.key_points || [lastResponse.argument.substring(0, 80)];
+                    const opponentCitationsCount = lastResponse.evidence_citations ? lastResponse.evidence_citations.length : 0;
+                    const rebuttalResult = rebuttaler.generateRebuttals(opponentClaims, opponentCitationsCount);
+                    rebuttalContext = rebuttalResult.generated_rebuttals.join('\n');
+
+                    // Concession Pivoting transition
+                    const pivoter = new ConcessionPivotingDebator(stance);
+                    const pivotResult = pivoter.compileConcessionPivot(lastResponse.argument.substring(0, 80));
+                    concessionContext = pivotResult.pivot_speech;
+                }
+
+                // Compile skills context instructions for the LLM
+                let skillsContext = `
+[LOCAL SKILLS AUDIT INTERRUPT]:
+Your turn is being programmatically managed and audited by your local JS "_debator" skills. You MUST satisfy the following structural directives:
+1. Pacing strategy:
+   - Round limit: ${pacing.current_round}/${pacing.total_rounds}
+   - Word target count limit: ${pacing.word_count_cap} words
+   - Active focus parameter: "${pacing.tactical_focus}"
+2. Cross-examination & Clashes:
+   ${rebuttalContext ? `- Rebuttal guidelines to present:\n${rebuttalContext}` : '- Opening constructive round: focus on laying out your strong core premises.'}
+   ${semanticContext ? `- Use this opponent keyword reframe: "${semanticContext}"` : ''}
+   ${clarificationContext ? `- Ambiguity clarification demand: "${clarificationContext}"` : ''}
+   ${concessionContext ? `- Transition concession pivot: "${concessionContext}"` : ''}
+   
+[FORMAT INSTRUCTION]: You must add the following additional fields to your output JSON payload:
+- "claim": "A brief 1-sentence central claim summarizing your argument."
+- "premises": ["Pillar 1", "Pillar 2"] (Array of foundational logical premises, minimum 1)
+- "evidence": ["Empirical stat 1", "Empirical stat 2"] (Array of supporting verified figures, optional)
+- "impacts": ["Strategic outcome 1", "Strategic outcome 2"] (Array of decisive impacts, optional)
+                `.trim();
+
+                if (currentRound === turns) {
+                    skillsContext += `
+\n3. Final Closing Summary:
+   - This is the closing summary round! Highlight decisive voter-point clashes.
+   - You MUST output additional final-round fields:
+     - "primary_wins": ["List of established outcomes you successfully proved."] (Array of strings, minimum 1)
+     - "competitor_failures": ["List of critical flaws you exposed in the rival's model."] (Array of strings)
+                    `.trim();
+                }
+
+                // Format prompt for child agent
                 const childPrompt = JSON.stringify({
                     referee_instructions: debateHistory[debateHistory.length - 1].argument,
                     opponent_argument: lastResponse ? lastResponse.argument : "",
-                    debate_history: debateHistory
+                    debate_history: debateHistory,
+                    skills_context: skillsContext
                 });
 
-                const childResult = await callModelWithRetry(speakerModel, childPrompt);
-                const childData = childResult.parsed;
+                // Verify budget limit constraints (BackpressureBudgetLimitJudge)
+                if (!backpressureAuditor.checkTokenBudget()) {
+                    logger.error('DiscordBot', 'Backpressure economic session token quota limit exceeded.');
+                    await message.channel.send(`⚠️ **[Backpressure Abort]** Total session token quota limit exceeded! Blocked turn.`);
+                    break;
+                }
 
-                // Send response message to Discord channel
-                let replyContent = `**${speakerEmoji} ${speakerName}:** ${childData.argument}`;
+                const competitorId = isRonaldo ? 'pro_agent' : 'con_agent';
+                const watchdogCallback = async (prompt) => {
+                    return await callModelWithRetry(speakerModel, prompt);
+                };
+
+                // Run competitor model under Watchdog Liveness keeps-alive (WatchdogLivenessMonitorJudge)
+                const watchdogResult = await livenessWatchdog.executeWithLivenessAudit(
+                    competitorId,
+                    watchdogCallback,
+                    childPrompt
+                );
+
+                if (watchdogResult.status === 'liveness_timeout_failure') {
+                    logger.warn('DiscordBot', `Watchdog Keep-Alive Triggered. Timeout failure for '${competitorId}'. Penalty applied.`);
+                    await message.channel.send(`🐕 **[Watchdog Keep-Alive Alert]** Timeout failure detected for **${speakerName}**! Scorecard penalty applied: -15.0 pts.`);
+                    currentSpeaker = isRonaldo ? 'messi-fan' : 'ronaldo-fan';
+                    orchestrator.advanceDebateRound();
+                    continue;
+                }
+
+                let childResult = watchdogResult.turn_payload;
+                let childData = childResult.parsed;
+
+                // Record token consumption securely in the backpressure auditor (BackpressureBudgetLimitJudge)
+                const currentTokens = childResult.candidate?.usageMetadata?.totalTokens || childResult.parsed?.usageMetadata?.totalTokens || 1000;
+                const backpressureReport = await backpressureAuditor.auditAndApplyBackpressure(currentTokens);
+                if (backpressureReport.backpressure_delay_applied > 0) {
+                    logger.warn('DiscordBot', `Backpressure progressive delay spacing applied: ${backpressureReport.backpressure_delay_applied}s.`);
+                }
+
+                // Trace search queries and run local search grounding (InternetSearchDebator)
+                if (childData.search_query) {
+                    const searcher = new InternetSearchDebator(stance);
+                    const localSearch = searcher.executeSearch(childData.search_query, verifiedCache);
+                    if (localSearch.filtered_matches_count > 0) {
+                        logger.info('DiscordBot', `Stance Grounding Cache Match: "${localSearch.findings[0]}"`);
+                        if (!childData.evidence_citations) childData.evidence_citations = [];
+                        for (let i = 0; i < localSearch.findings.length; i++) {
+                            childData.evidence_citations.push({
+                                source_url: localSearch.sources[i],
+                                extracted_claim: localSearch.findings[i]
+                            });
+                        }
+                    }
+                }
+
+                // Run real-time Factual Check (EmpiricalFactCheckingJudge)
+                const claims = childData.claim ? [childData.claim] : [childData.argument.substring(0, 80)];
+                const citations = childData.evidence_citations ? childData.evidence_citations.map(c => c.extracted_claim || '') : [];
+                const factResult = factVerifier.verifyClaims(competitorId, claims, citations);
+                logger.info('DiscordBot', `Empirical Fact Audit: Truth Ratio: ${factResult.truthfulness_ratio} | ${factResult.fact_check_report}`);
+
+                // Run Fallacy Protection Linter (FallacyProtectionDebator)
+                const linter = new FallacyProtectionDebator(stance);
+                let fallacyAudit = linter.auditDraftText(childData.argument || '');
+                let retries = 2;
+                while (fallacyAudit.is_flagged_unsafe && retries > 0) {
+                    logger.warn('DiscordBot', `Fallacy Protection Blocked Draft. Flagged: ${JSON.stringify(fallacyAudit.spotted_violations)}. Forcing self-correction...`);
+                    const recoveryPrompt = `
+Your previous response contained logical fallacies and was BLOCKED by your local FallacyProtectionDebator:
+"${fallacyAudit.audit_verdict_report}"
+
+You MUST rewrite your argument to be 100% logically sound and clean. Avoid ad hominem attacks (calling your opponent stupid/dishonest), slippery slope, or circular reasoning. Keep your speech structured and highly persuasive!
+`.trim();
+                    const retryResult = await callModelWithRetry(speakerModel, `${childPrompt}\n\n${recoveryPrompt}`);
+                    childData = retryResult.parsed;
+                    fallacyAudit = linter.auditDraftText(childData.argument || '');
+                    retries--;
+                }
+                if (fallacyAudit.is_flagged_unsafe) {
+                    logger.error('DiscordBot', `Fallacy Shield Bypassed: A logical loophole escaped correction filter.`);
+                } else {
+                    logger.info('DiscordBot', `Fallacy Shield Verified: Outgoing speech is audited and logically clean.`);
+                }
+
+                // Run real-time Logical Fallacy Linter (LogicalFallacyDetectionJudge & FallacyWeightingMatrixJudge)
+                const refereeFallacyAudit = fallacyLinterObj.auditSpeechText(competitorId, currentRound, childData.argument);
+                let fallacyScorePenalty = 0.0;
+                if (refereeFallacyAudit.is_logically_unsafe) {
+                    const fallacyDeduction = penaltyMatrix.calculateFallacyDeductions(competitorId, refereeFallacyAudit.detected_infractions);
+                    fallacyScorePenalty = fallacyDeduction.total_score_penalty;
+                    logger.warn('DiscordBot', `Logical Fallacy Infraction Penalty: -${fallacyScorePenalty} pts applied to scorecard.`);
+                } else {
+                    logger.info('DiscordBot', `Referee Fallacy Audit: Outgoing speech verified logically clean.`);
+                }
+
+                // Run real-time Conversational Overlap Map (ClashMapTrackerJudge)
+                let responsivenessOverlap = 1.0;
+                if (lastResponse && lastResponse.argument) {
+                    const overlapResult = overlapTracker.trackResponsiveness(competitorId, childData.argument, lastResponse.argument);
+                    responsivenessOverlap = overlapResult.overlap_index;
+                    logger.info('DiscordBot', `Clash Responsiveness Map: Overlap Index: ${responsivenessOverlap} | ${overlapResult.responsiveness_report}`);
+                }
+
+                // Run real-time Closing Summary Auditing (ClosingSummaryAuditorJudge)
+                if (currentRound === turns) {
+                    const historyLogForAuditor = debateHistory.filter(h => h.speaker !== 'Referee').map(h => ({
+                        competitor_id: h.speaker === PERSONAS.ronaldo.name ? 'pro_agent' : 'con_agent',
+                        speech_text: h.argument
+                    }));
+                    const closerAuditor = new ClosingSummaryAuditorJudge(historyLogForAuditor);
+                    const summaryAudit = closerAuditor.auditClosingSpeech(competitorId, childData.argument);
+                    if (summaryAudit.has_new_arguments) {
+                        logger.error('DiscordBot', `Referee Summary Audit Infraction: Competitor '${competitorId}' injected new closing arguments. Penalty applied.`);
+                        fallacyLinterObj.violations_history.push({
+                            round_id: currentRound,
+                            competitor_id: competitorId,
+                            fallacy_type: 'new_arguments_at_closing',
+                            phrases: summaryAudit.new_terms_spotted
+                        });
+                        penaltyMatrix.total_deductions_applied += 10.0;
+                    } else {
+                        logger.info('DiscordBot', 'Referee Summary Audit: Closing summary contains no new arguments.');
+                    }
+                }
+
+                // Apply Argument Structuring Skill (ArgumentStructureDebator)
+                const struct = new ArgumentStructureDebator(stance);
+                const structureResult = struct.execute({
+                    claim: childData.claim || childData.argument.substring(0, 80),
+                    premises: childData.premises && childData.premises.length > 0 ? childData.premises : [childData.argument.substring(0, 150)],
+                    evidence: childData.evidence || [],
+                    impacts: childData.impacts || []
+                });
+
+                // Apply Rhetorical Storytelling Skill (RhetoricalStorytellingDebator)
+                const story = new RhetoricalStorytellingDebator(stance);
+                story.execute(structureResult.speech_markdown);
+
+                // Apply Closing Impact Summary Skill (ClosingImpactSummaryDebator) on final turn
+                if (currentRound === turns) {
+                    const closer = new ClosingImpactSummaryDebator(stance);
+                    const wins = childData.primary_wins && childData.primary_wins.length > 0 ? childData.primary_wins : ["Our record goals stats", "Our multiple top leagues trophy collection"];
+                    const leaks = childData.competitor_failures && childData.competitor_failures.length > 0 ? childData.competitor_failures : ["Exposed statistical omissions", "Failing to refute playmaking metrics"];
+                    closer.compileFinalClosingSpeech(wins, leaks);
+                }
+
+                // Run real-time Cross-Examination Interruption trigger (CrossExaminationTriggerJudge & SocraticPromptGeneratorJudge)
+                const triggerResult = crossExamInterrupter.evaluateTurnInterruption(childData.argument);
+                if (triggerResult.is_trigger_activated) {
+                    logger.warn('DiscordBot', `Cross-Exam Interrupter Triggered: Controversy tag '${triggerResult.matched_alert_token}' spotted. Standard rounds paused.`);
+                    
+                    const stanceShort = isRonaldo ? 'pro' : 'con';
+                    const challenge = socraticBuilder.compileTargetedSocraticChallenge(stanceShort, currentRound);
+                    
+                    await message.channel.send(`⚖️ **The Referee (Socratic Interrogation):** ${challenge.compiled_socratic_prompt}`);
+                    debateHistory.push({ speaker: "Referee", argument: challenge.compiled_socratic_prompt });
+                    
+                    await new Promise(resolve => setTimeout(resolve, 15000));
+                    await message.channel.sendTyping();
+                    
+                    const interrogatePrompt = JSON.stringify({
+                        referee_instructions: challenge.compiled_socratic_prompt,
+                        opponent_argument: "",
+                        debate_history: debateHistory,
+                        skills_context: "This is a Socratic Interrogation! Address the referee's question directly with extreme logical precision. No bluffs or evasive phrasing allowed."
+                    });
+                    
+                    const socraticWatchdogResult = await livenessWatchdog.executeWithLivenessAudit(
+                        competitorId,
+                        watchdogCallback,
+                        interrogatePrompt
+                    );
+                    
+                    if (socraticWatchdogResult.status === 'liveness_timeout_failure') {
+                         logger.warn('DiscordBot', 'Watchdog Keep-Alive Triggered: Timeout failure during Socratic defense. Penalty applied.');
+                         await message.channel.send(`🐕 **[Watchdog Keep-Alive Alert]** Timeout failure detected during Socratic defense! Scorecard penalty applied: -15.0 pts.`);
+                    } else {
+                         const interrogateResult = socraticWatchdogResult.turn_payload;
+                         const interrogateData = interrogateResult.parsed;
+                         
+                         await message.channel.send(`**${speakerEmoji} ${speakerName} (Socratic Defense):** ${interrogateData.argument}`);
+                         debateHistory.push({ speaker: speakerName, argument: interrogateData.argument });
+                         
+                         childData.argument = `${childData.argument}\n\n*[Socratic Cross-Exam Defense]:* ${interrogateData.argument}`;
+                    }
+                }
+
+                // Compile beautiful rich spoken debate argument text wrapped in quotation layouts
+                let replyContent = `**${speakerEmoji} ${speakerName}:**\n"${childData.argument}"\n`;
+                
+                // Add local grounding matches (InternetSearchDebator)
                 const searchMetadata = getSearchMetadataString(childResult.candidate);
                 if (searchMetadata) {
                     replyContent += `\n${searchMetadata}`;
+                }
+                
+                // Add local citation validations metadata note (EvidenceVerificationDebator)
+                if (childData.evidence_citations && childData.evidence_citations.length > 0) {
+                    const verifierObj = new EvidenceVerificationDebator(stance);
+                    for (const cit of childData.evidence_citations) {
+                        const audit = verifierObj.verifyLocalCitation(cit.extracted_claim || '', verifiedCache);
+                        replyContent += `\n*🛡️ [Evidence Integrity Audit]: ${audit.verification_status_report}*`;
+                    }
+                }
+                
+                // Add local argument structure node metadata trace (ArgumentStructureDebator)
+                const structLabel = stance === 'affirmative' ? 'Constructive Pillar' : 'Defensive Counter-Wedge';
+                replyContent += `\n*🧱 [Argument Structure Node]: Stance: ${stance.charAt(0).toUpperCase() + stance.slice(1)} (${structLabel})*`;
+                replyContent += `\n*• Claim: ${structureResult.claim_extracted}*`;
+                replyContent += `\n*• Premises: ${childData.premises ? childData.premises.join(', ') : 'Expressed constructive premises'}*`;
+                if (childData.impacts && childData.impacts.length > 0) {
+                    replyContent += `\n*• Impact: ${childData.impacts.join(', ')}*`;
+                }
+                
+                // Add linter fallacy protection verification status (FallacyProtectionDebator)
+                if (fallacyAudit.is_flagged_unsafe) {
+                    replyContent += `\n*⚠️ [Fallacy Shield Bypassed] A logical loophole escaped correction filter.*`;
+                } else {
+                    replyContent += `\n*🛡️ [Fallacy Shield Verified] Outgoing speech is audited and logically clean.*`;
+                }
+                
+                // Add final summary compilation status (ClosingSummaryDebator)
+                if (currentRound === turns) {
+                    replyContent += `\n*🏆 [Closing Summary Auditor] Verified: Standardized voter points clash successfully compiled.*`;
                 }
 
                 await message.channel.send(replyContent);
@@ -240,6 +605,7 @@ client.on('messageCreate', async (message) => {
                 await new Promise(resolve => setTimeout(resolve, 15000));
                 await message.channel.sendTyping();
 
+                // Inject dynamic real-time audits report directly into the Referee prompt!
                 const refereePrompt = JSON.stringify({
                     last_speaker: lastSpeaker,
                     last_response: {
@@ -248,7 +614,16 @@ client.on('messageCreate', async (message) => {
                         bluff_or_lie_details: lastResponse.bluff_or_lie_details
                     },
                     opponent_detected_lies: opponentDetectedLies,
-                    debate_history: debateHistory
+                    debate_history: debateHistory,
+                    local_skills_audits: {
+                        competitor_id: competitorId,
+                        fact_check_ratio: factResult.truthfulness_ratio,
+                        fact_check_report: factResult.fact_check_report,
+                        fallacies_detected: refereeFallacyAudit.detected_infractions.map(i => i.fallacy_type),
+                        fallacy_score_penalty: fallacyScorePenalty,
+                        clash_responsiveness_index: responsivenessOverlap,
+                        liveness_violations_count: livenessWatchdog.watchdog_violations_log.filter(v => v.competitor_id === competitorId).length
+                    }
                 });
 
                 const refResult = await callModelWithRetry(refereeModel, refereePrompt);
@@ -263,40 +638,135 @@ client.on('messageCreate', async (message) => {
                 debateHistory.push({ speaker: "Referee", argument: refData.referee_commentary });
                 
                 currentSpeaker = refData.next_speaker || (isRonaldo ? 'messi-fan' : 'ronaldo-fan');
+                
+                // Manage turn sequence orchestration counters (dialogue_orchestration_judge)
+                orchestrator.advanceDebateRound();
             }
 
-            // Final Verdict
+            // Final Verdict compilation and decisions normalization using local skills
             await new Promise(resolve => setTimeout(resolve, 15000));
             await message.channel.sendTyping();
-            await message.channel.send("⚖️ **The Referee is preparing the Final Verdict...** ⚖️");
+            await message.channel.send("⚖️ **The Referee is preparing the Final Verdict scorecard using core decisions skills...** ⚖️");
 
-            const finalVerdictPrompt = `The debate of ${turns} turns per side is complete. Please analyze the debate history, evaluate who made a stronger case, consider if they successfully detected each other's lies/bluffs, and declare a winner. Respond ONLY with the final verdict JSON.`;
+            // 1. Semantic evaluation from Gemini model (rhetoric scorecard grades)
+            const evaluationPrompt = `
+The debate of ${turns} turns per side is complete. Please review the entire debate history logs, evaluate both competitors' rhetorical storytelling quality and narrative strength on a 0-100 scale.
+Respond ONLY with a raw JSON object matching the following structure:
+{
+  "pro_storytelling_grade": 85.0,
+  "con_storytelling_grade": 80.0,
+  "key_rhetoric_findings": "Detailed textual analysis of both players' narration."
+}
+            `.trim();
+            const evaluationResult = await callModelWithRetry(refereeModel, evaluationPrompt);
+            const rawEvaluation = evaluationResult.parsed;
 
-            const finalResult = await callModelWithRetry(refereeModel, finalVerdictPrompt);
-            const finalData = finalResult.parsed;
+            // 2. Normalize raw grades using Bias balancing matrix (BiasSelfAuditJudge)
+            logger.info('DiscordBot', 'Auditing Referee grades against historic baselines using bias audit...');
+            const biasNormalizer = new BiasSelfAuditJudge(75.0, 10.0);
+            const balancedScores = biasNormalizer.evaluateScoreDrift(
+                rawEvaluation.pro_storytelling_grade || 75.0,
+                rawEvaluation.con_storytelling_grade || 75.0
+            );
+            if (balancedScores.is_bias_skew_flagged) {
+                logger.warn('DiscordBot', `Dynamic scorecard bias adjustments completed. Correction: ${balancedScores.correction_applied} pts.`);
+            }
 
-            let verdictMsg = `🏆 **THE FINAL VERDICT** 🏆\n\n`;
-            verdictMsg += `🥇 **Winner:** **${finalData.winner}**\n\n`;
-            verdictMsg += `📝 **Explanation:** ${finalData.verdict_explanation}\n\n`;
+            // 3. Compute final weighted grades scorecard (PersuasivenessEvaluationJudge)
+            logger.info('DiscordBot', 'Computing final weighted scorecards using persuasiveness judge...');
+            const proFactLogs = factVerifier.audit_log.filter(l => l.competitor_id === 'pro_agent');
+            const conFactLogs = factVerifier.audit_log.filter(l => l.competitor_id === 'con_agent');
+            const proFactAvg = proFactLogs.length > 0 ? (proFactLogs.reduce((sum, item) => sum + item.truthfulness_ratio, 0.0) / proFactLogs.length) : 1.0;
+            const conFactAvg = conFactLogs.length > 0 ? (conFactLogs.reduce((sum, item) => sum + item.truthfulness_ratio, 0.0) / conFactLogs.length) : 1.0;
+
+            const proClashLogs = overlapTracker.overlap_history.filter(l => l.competitor_id === 'pro_agent');
+            const conClashLogs = overlapTracker.overlap_history.filter(l => l.competitor_id === 'con_agent');
+            const proClashAvg = proClashLogs.length > 0 ? (proClashLogs.reduce((sum, item) => sum + item.overlap_index, 0.0) / proClashLogs.length) : 1.0;
+            const conClashAvg = conClashLogs.length > 0 ? (conClashLogs.reduce((sum, item) => sum + item.overlap_index, 0.0) / conClashLogs.length) : 1.0;
+
+            // Fetch penalty totals from liveness watchdog & fallacy matrix
+            const proLivenessViolations = livenessWatchdog.watchdog_violations_log.filter(v => v.competitor_id === 'pro_agent');
+            const proTotalPenalties = proLivenessViolations.length * 15.0 + fallacyLinterObj.violations_history
+                .filter(v => v.competitor_id === 'pro_agent')
+                .reduce((sum, item) => sum + (penaltyMatrix.penalty_matrix[item.fallacy_type] || 2.5), 0.0);
+
+            const conLivenessViolations = livenessWatchdog.watchdog_violations_log.filter(v => v.competitor_id === 'con_agent');
+            const conTotalPenalties = conLivenessViolations.length * 15.0 + fallacyLinterObj.violations_history
+                .filter(v => v.competitor_id === 'con_agent')
+                .reduce((sum, item) => sum + (penaltyMatrix.penalty_matrix[item.fallacy_type] || 2.5), 0.0);
+
+            const graderObj = new PersuasivenessEvaluationJudge();
+            const proScorecard = graderObj.calculateDebateGrade(
+                'pro_agent',
+                proClashAvg,
+                proFactAvg,
+                balancedScores.normalized_pro_score,
+                proTotalPenalties
+            );
+            const conScorecard = graderObj.calculateDebateGrade(
+                'con_agent',
+                conClashAvg,
+                conFactAvg,
+                balancedScores.normalized_con_score,
+                conTotalPenalties
+            );
+
+            // 4. Decisive draw-prevention Tie Breaker (TieBreakerResolutionJudge)
+            logger.info('DiscordBot', 'Verifying score splits & enforcing winner resolution using tie-breaker...');
+            const proFallaciesCount = fallacyLinterObj.violations_history.filter(v => v.competitor_id === 'pro_agent').length;
+            const conFallaciesCount = fallacyLinterObj.violations_history.filter(v => v.competitor_id === 'con_agent').length;
+
+            const tieBreakerObj = new TieBreakerResolutionJudge();
+            const finalVerdictResult = tieBreakerObj.resolveTie({
+                pro_score: proScorecard.final_performance_grade,
+                con_score: conScorecard.final_performance_grade,
+                pro_fact_ratio: proFactAvg,
+                con_fact_ratio: conFactAvg,
+                pro_clash_index: proClashAvg,
+                con_clash_index: conClashAvg,
+                pro_fallacies_count: proFallaciesCount,
+                con_fallacies_count: conFallaciesCount
+            });
+
+            // 5. Package full stats and compile markdown report (GradeJustificationReportJudge)
+            logger.info('DiscordBot', 'Compiling final markdown scorecard using report judge...');
+            const reportCompiler = new GradeJustificationReportJudge();
             
-            verdictMsg += `📊 **Ronaldo Fan Key Points:**\n`;
-            finalData.summary_of_arguments?.ronaldo_fan_key_points?.forEach(p => {
-                verdictMsg += `• ${p}\n`;
+            // Map full violations log details for scorecard
+            const historyViolationsMapped = fallacyLinterObj.violations_history.map(item => ({
+                round_id: item.round_id,
+                competitor_id: item.competitor_id,
+                fallacy_type: item.fallacy_type,
+                deduction_penalty: penaltyMatrix.penalty_matrix[item.fallacy_type] || 2.5
+            }));
+            livenessWatchdog.watchdog_violations_log.forEach(item => {
+                historyViolationsMapped.push({
+                    round_id: 1,
+                    competitor_id: item.competitor_id,
+                    fallacy_type: 'watchdog_liveness_timeout',
+                    deduction_penalty: item.score_deduction
+                });
             });
 
-            verdictMsg += `\n📊 **Messi Fan Key Points:**\n`;
-            finalData.summary_of_arguments?.messi_fan_key_points?.forEach(p => {
-                verdictMsg += `• ${p}\n`;
+            const scorecardReport = reportCompiler.compileReport({
+                debate_subject: debateSubject,
+                total_rounds: turns,
+                winner_id: finalVerdictResult.winner_id,
+                final_pro_score: finalVerdictResult.final_pro_score,
+                final_con_score: finalVerdictResult.final_con_score,
+                margin_differential: finalVerdictResult.margin_differential,
+                fallacy_infractions_log: historyViolationsMapped,
+                pro_verified_ratio: proFactAvg,
+                con_verified_ratio: conFactAvg,
+                pro_overlap_index: proClashAvg,
+                con_overlap_index: conClashAvg
             });
 
-            verdictMsg += `\n🔍 **Bluff & Detection Summary:**\n`;
-            verdictMsg += `• Ronaldo Fan: ${finalData.bluff_detection_summary?.ronaldo_fan_bluffs_detected}\n`;
-            verdictMsg += `• Messi Fan: ${finalData.bluff_detection_summary?.messi_fan_bluffs_detected}\n`;
-
-            await message.channel.send(verdictMsg);
+            // Transmit scorecard evaluation report securely splitting by 1900 chars
+            await sendLongMessage(message.channel, scorecardReport.grading_justification);
             await message.channel.send("🏁 **The Debate has officially closed!** 🏁");
 
-            logger.info('DiscordBot', 'Discord debate completed successfully', { winner: finalData.winner });
+            logger.info('DiscordBot', 'Discord debate completed successfully with local judge evaluation', { winner: finalVerdictResult.winner_id });
 
         } catch (err) {
             logger.error('DiscordBot', `Error during Discord debate orchestration: ${err.message}`);

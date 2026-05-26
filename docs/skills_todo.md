@@ -9,8 +9,8 @@
 | **Phase 2** | M2.1 | Implement core debater search, structure & verification skills | Completed ✅ |
 | **Phase 3** | M3.1 | Implement advanced debate rhetoric & strategic pivots skills | Completed ✅ |
 | **Phase 4** | M4.1 | Implement referee loop, watchdog lifespans & socket security | Completed ✅ |
-| **Phase 5** | M5.1 | Implement analytical checkers, fallacies weighting & tie-breakers | Pending ⏳ |
-| **Phase 6** | M6.1 | Deploy automated unit mock and full 10-ping debate test suites | Pending ⏳ |
+| **Phase 5** | M5.1 | Implement analytical checkers, fallacies weighting & tie-breakers | Completed ✅ |
+| **Phase 6** | M6.1 | Deploy automated unit mock and full 10-ping debate test suites | Completed ✅ |
 
 ---
 
@@ -97,37 +97,37 @@ To mark any target agent capability block as "Completed", the following criteria
 ---
 
 ### Phase 5: Analytical Evaluation & Verdict Mechanics
-- [ ] **Empirical Fact Checking Skill (`empirical_fact_checking_judge`)**:
+- [x] **Empirical Fact Checking Skill (`empirical_fact_checking_judge`)**:
   - Spec file: [src/subagents/skills/empirical_fact_checking_judge/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/subagents/src/subagents/skills/empirical_fact_checking_judge/skill.md)
   - Code file: [src/subagents/skills/empirical_fact_checking_judge/empirical_fact_checking_judge.js](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/subagents/src/subagents/skills/empirical_fact_checking_judge/empirical_fact_checking_judge.js)
-- [ ] **Logical Fallacy Detection Skill (`logical_fallacy_detection_judge`)**:
+- [x] **Logical Fallacy Detection Skill (`logical_fallacy_detection_judge`)**:
   - Spec file: [src/subagents/skills/logical_fallacy_detection_judge/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/subagents/src/subagents/skills/logical_fallacy_detection_judge/skill.md)
   - Code file: [src/subagents/skills/logical_fallacy_detection_judge/logical_fallacy_detection_judge.js](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/subagents/src/subagents/skills/logical_fallacy_detection_judge/logical_fallacy_detection_judge.js)
-- [ ] **Fallacy Weighting Matrix Skill (`fallacy_weighting_matrix_judge`)**:
+- [x] **Fallacy Weighting Matrix Skill (`fallacy_weighting_matrix_judge`)**:
   - Spec file: [src/subagents/skills/fallacy_weighting_matrix_judge/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/subagents/src/subagents/skills/fallacy_weighting_matrix_judge/skill.md)
   - Code file: [src/subagents/skills/fallacy_weighting_matrix_judge/fallacy_weighting_matrix_judge.js](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/subagents/src/subagents/skills/fallacy_weighting_matrix_judge/fallacy_weighting_matrix_judge.js)
-- [ ] **Clash-Map Tracker Skill (`clash_map_tracker_judge`)**:
+- [x] **Clash-Map Tracker Skill (`clash_map_tracker_judge`)**:
   - Spec file: [src/subagents/skills/clash_map_tracker_judge/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/subagents/src/subagents/skills/clash_map_tracker_judge/skill.md)
   - Code file: [src/subagents/skills/clash_map_tracker_judge/clash_map_tracker_judge.js](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/subagents/src/subagents/skills/clash_map_tracker_judge/clash_map_tracker_judge.js)
-- [ ] **Closing Summary Auditor Skill (`closing_summary_auditor_judge`)**:
+- [x] **Closing Summary Auditor Skill (`closing_summary_auditor_judge`)**:
   - Spec file: [src/subagents/skills/closing_summary_auditor_judge/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/subagents/src/subagents/skills/closing_summary_auditor_judge/skill.md)
   - Code file: [src/subagents/skills/closing_summary_auditor_judge/closing_summary_auditor_judge.js](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/subagents/src/subagents/skills/closing_summary_auditor_judge/closing_summary_auditor_judge.js)
-- [ ] **Bias Self-Audit Skill (`bias_self_audit_judge`)**:
+- [x] **Bias Self-Audit Skill (`bias_self_audit_judge`)**:
   - Spec file: [src/subagents/skills/bias_self_audit_judge/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/subagents/src/subagents/skills/bias_self_audit_judge/skill.md)
   - Code file: [src/subagents/skills/bias_self_audit_judge/bias_self_audit_judge.js](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/subagents/src/subagents/skills/bias_self_audit_judge/bias_self_audit_judge.js)
-- [ ] **Persuasiveness Evaluation Skill (`persuasiveness_evaluation_judge`)**:
+- [x] **Persuasiveness Evaluation Skill (`persuasiveness_evaluation_judge`)**:
   - Spec file: [src/subagents/skills/persuasiveness_evaluation_judge/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/subagents/src/subagents/skills/persuasiveness_evaluation_judge/skill.md)
   - Code file: [src/subagents/skills/persuasiveness_evaluation_judge/persuasiveness_evaluation_judge.js](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/subagents/src/subagents/skills/persuasiveness_evaluation_judge/persuasiveness_evaluation_judge.js)
-- [ ] **Tie-Breaker Resolution Skill (`tie_breaker_resolution_judge`)**:
+- [x] **Tie-Breaker Resolution Skill (`tie_breaker_resolution_judge`)**:
   - Spec file: [src/subagents/skills/tie_breaker_resolution_judge/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/subagents/src/subagents/skills/tie_breaker_resolution_judge/skill.md)
   - Code file: [src/subagents/skills/tie_breaker_resolution_judge/tie_breaker_resolution_judge.js](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/subagents/src/subagents/skills/tie_breaker_resolution_judge/tie_breaker_resolution_judge.js)
-- [ ] **Grade Justification Report Skill (`grade_justification_report_judge`)**:
+- [x] **Grade Justification Report Skill (`grade_justification_report_judge`)**:
   - Spec file: [src/subagents/skills/grade_justification_report_judge/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/subagents/src/subagents/skills/grade_justification_report_judge/skill.md)
   - Code file: [src/subagents/skills/grade_justification_report_judge/grade_justification_report_judge.js](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/subagents/src/subagents/skills/grade_justification_report_judge/grade_justification_report_judge.js)
 
 ---
 
 ### Phase 6: Release Quality & Full System Integration
-- [ ] **Test Fixtures Suite Setup**: Setup standard shared fixtures locally in [test/skills.test.js](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/subagents/test/skills.test.js). *(Assigned: AI)*
-- [ ] **Automated Skills Tests**: Execute full unit test coverage suite reaching a verified **100% passing** margin in [test/skills.test.js](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/subagents/test/skills.test.js). *(Assigned: AI)*
-- [ ] **Local Sandbox Demonstrations**: Execute sandbox integration validation scripts under private brain scratch space. *(Assigned: AI)*
+- [x] **Test Fixtures Suite Setup**: Setup standard shared fixtures locally in [test/skills.test.js](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/subagents/test/skills.test.js). *(Assigned: AI)*
+- [x] **Automated Skills Tests**: Execute full unit test coverage suite reaching a verified **100% passing** margin in [test/skills.test.js](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/subagents/test/skills.test.js). *(Assigned: AI)*
+- [x] **Local Sandbox Demonstrations**: Execute sandbox integration validation scripts under private brain scratch space. *(Assigned: AI)*
