@@ -1,0 +1,133 @@
+# Agent Debate Skills Task Tracker (TODO List)
+
+## 1. Release Phases & Milestone Plan
+
+| Phase | Milestone | Focus Area | Status |
+| :--- | :--- | :--- | :--- |
+| **Phase 1** | M1.1 | Establish `src/homework_2/skills/` directory layouts & gitkeep tags | Completed ✅ |
+| **Phase 1** | M1.2 | Define Debate Skills PRD spec & bilingual C4 planning frames | Completed ✅ |
+| **Phase 2** | M2.1 | Implement core debater search, structure & verification skills | Completed ✅ |
+| **Phase 3** | M3.1 | Implement advanced debate rhetoric & strategic pivots skills | Completed ✅ |
+| **Phase 4** | M4.1 | Implement referee loop, watchdog lifespans & socket security | Completed ✅ |
+| **Phase 5** | M5.1 | Implement analytical checkers, fallacies weighting & tie-breakers | Completed ✅ |
+| **Phase 6** | M6.1 | Deploy automated unit mock and full 10-ping debate test suites | Completed ✅ |
+
+---
+
+## 2. Definition of Done (DoD) per Skill Task
+
+To mark any target agent capability block as "Completed", the following criteria must be satisfied without exception:
+
+1. **Specification Document**: A valid markdown specification file named `skill.md` must exist in the skill folder describing parameters, inputs, outputs, and behaviors.
+2. **Implementation Script**: A valid Python execution script named `<skill_name>.py` must exist in the folder containing the core algorithm blocks.
+3. **Complexity Constraints**: The python script must contain **less than 150 lines of code** (excluding standard docstrings and JSON configurations schemas) (Section 3.2).
+4. **Bilingual Documentation**: All public classes, parameters, and return types must be fully documented using precise Google-style docstrings (Section 3.3).
+5. **Code Hygiene Verification**: Target files must execute through `ruff check` with **0 errors or violations** (Section 7.1).
+6. **Token Protection & Cache**: The skill uses dynamic internal indexing or local pre-verifiers to prevent redundant network lookups, saving API execution budgets (Section 5.1).
+
+---
+
+## 3. Detailed Tasks Matrix
+
+### Phase 1: Specifications & Base Frameworks
+- [x] **Skills Directory Setup**: Create the [src/homework_2/skills/](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/) tracking workspace. *(Assigned: AI)*
+- [x] **Debate Product Spec**: Authors standard [docs/skills_prd.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/docs/skills_prd.md) mapping the 25 required skills. *(Assigned: AI)*
+- [x] **Technical Blueprint Plan**: Deploy unified layered SDK architecture spec in [docs/skills_plan.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/docs/skills_plan.md). *(Assigned: AI)*
+
+---
+
+### Phase 2: Competitor Agent Foundations
+- [x] **Internet Search Skill (`internet_search_debator`)**:
+  - Spec file: [src/homework_2/skills/internet_search_debator/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/internet_search_debator/skill.md)
+  - Code file: [src/homework_2/skills/internet_search_debator/internet_search_debator.py](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/internet_search_debator/internet_search_debator.py)
+- [x] **Argument Structuring Skill (`argument_structure_debator`)**:
+  - Spec file: [src/homework_2/skills/argument_structure_debator/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/argument_structure_debator/skill.md)
+  - Code file: [src/homework_2/skills/argument_structure_debator/argument_structure_debator.py](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/argument_structure_debator/argument_structure_debator.py)
+- [x] **Evidence Verification Skill (`evidence_verification_debator`)**:
+  - Spec file: [src/homework_2/skills/evidence_verification_debator/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/evidence_verification_debator/skill.md)
+  - Code file: [src/homework_2/skills/evidence_verification_debator/evidence_verification_debator.py](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/evidence_verification_debator/evidence_verification_debator.py)
+- [x] **Logical Fallacy Protection Skill (`fallacy_protection_debator`)**:
+  - Spec file: [src/homework_2/skills/fallacy_protection_debator/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/fallacy_protection_debator/skill.md)
+  - Code file: [src/homework_2/skills/fallacy_protection_debator/fallacy_protection_debator.py](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/fallacy_protection_debator/fallacy_protection_debator.py)
+
+---
+
+### Phase 3: Adversarial Tactics & Pivot Strategies
+- [x] **Rhetorical Storytelling Skill (`rhetorical_storytelling_debator`)**:
+  - Spec file: [src/homework_2/skills/rhetorical_storytelling_debator/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/rhetorical_storytelling_debator/skill.md)
+  - Code file: [src/homework_2/skills/rhetorical_storytelling_debator/rhetorical_storytelling_debator.py](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/rhetorical_storytelling_debator/rhetorical_storytelling_debator.py)
+- [x] **Semantic Examination Skill (`semantic_cross_examination_debator`)**:
+  - Spec file: [src/homework_2/skills/semantic_cross_examination_debator/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/semantic_cross_examination_debator/skill.md)
+  - Code file: [src/homework_2/skills/semantic_cross_examination_debator/semantic_cross_examination_debator.py](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/semantic_cross_examination_debator/semantic_cross_examination_debator.py)
+- [x] **Rebuttal Generator Skill (`rebuttal_generator_debator`)**:
+  - Spec file: [src/homework_2/skills/rebuttal_generator_debator/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/rebuttal_generator_debator/skill.md)
+  - Code file: [src/homework_2/skills/rebuttal_generator_debator/rebuttal_generator_debator.py](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/rebuttal_generator_debator/rebuttal_generator_debator.py)
+- [x] **Time Allocation Strategy Skill (`time_allocation_strategy_debator`)**:
+  - Spec file: [src/homework_2/skills/time_allocation_strategy_debator/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/time_allocation_strategy_debator/skill.md)
+  - Code file: [src/homework_2/skills/time_allocation_strategy_debator/time_allocation_strategy_debator.py](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/time_allocation_strategy_debator/time_allocation_strategy_debator.py)
+- [x] **Concession Pivoting Skill (`concession_pivoting_debator`)**:
+  - Spec file: [src/homework_2/skills/concession_pivoting_debator/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/concession_pivoting_debator/skill.md)
+  - Code file: [src/homework_2/skills/concession_pivoting_debator/concession_pivoting_debator.py](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/concession_pivoting_debator/concession_pivoting_debator.py)
+- [x] **Clarification Demand Skill (`clarification_demand_debator`)**:
+  - Spec file: [src/homework_2/skills/clarification_demand_debator/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/clarification_demand_debator/skill.md)
+  - Code file: [src/homework_2/skills/clarification_demand_debator/clarification_demand_debator.py](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/clarification_demand_debator/clarification_demand_debator.py)
+- [x] **Closing Impact Summary Skill (`closing_impact_summary_debator`)**:
+  - Spec file: [src/homework_2/skills/closing_impact_summary_debator/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/closing_impact_summary_debator/skill.md)
+  - Code file: [src/homework_2/skills/closing_impact_summary_debator/closing_impact_summary_debator.py](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/closing_impact_summary_debator/closing_impact_summary_debator.py)
+
+---
+
+### Phase 4: Moderator Governance & Security Lifespans
+- [x] **Dialogue Orchestration Skill (`dialogue_orchestration_judge`)**:
+  - Spec file: [src/homework_2/skills/dialogue_orchestration_judge/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/dialogue_orchestration_judge/skill.md)
+  - Code file: [src/homework_2/skills/dialogue_orchestration_judge/dialogue_orchestration_judge.py](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/dialogue_orchestration_judge/dialogue_orchestration_judge.py)
+- [x] **Watchdog Liveness Monitor Skill (`watchdog_liveness_monitor_judge`)**:
+  - Spec file: [src/homework_2/skills/watchdog_liveness_monitor_judge/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/watchdog_liveness_monitor_judge/skill.md)
+  - Code file: [src/homework_2/skills/watchdog_liveness_monitor_judge/watchdog_liveness_monitor_judge.py](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/watchdog_liveness_monitor_judge/watchdog_liveness_monitor_judge.py)
+- [x] **Backpressure Budget Limit Skill (`backpressure_budget_limit_judge`)**:
+  - Spec file: [src/homework_2/skills/backpressure_budget_limit_judge/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/backpressure_budget_limit_judge/skill.md)
+  - Code file: [src/homework_2/skills/backpressure_budget_limit_judge/backpressure_budget_limit_judge.py](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/backpressure_budget_limit_judge/backpressure_budget_limit_judge.py)
+- [x] **Cross-Examination Trigger Skill (`cross_examination_trigger_judge`)**:
+  - Spec file: [src/homework_2/skills/cross_examination_trigger_judge/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/cross_examination_trigger_judge/skill.md)
+  - Code file: [src/homework_2/skills/cross_examination_trigger_judge/cross_examination_trigger_judge.py](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/cross_examination_trigger_judge/cross_examination_trigger_judge.py)
+- [x] **Socratic Prompt Generator Skill (`socratic_prompt_generator_judge`)**:
+  - Spec file: [src/homework_2/skills/socratic_prompt_generator_judge/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/socratic_prompt_generator_judge/skill.md)
+  - Code file: [src/homework_2/skills/socratic_prompt_generator_judge/socratic_prompt_generator_judge.py](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/socratic_prompt_generator_judge/socratic_prompt_generator_judge.py)
+
+---
+
+### Phase 5: Analytical Evaluation & Verdict Mechanics
+- [x] **Empirical Fact Checking Skill (`empirical_fact_checking_judge`)**:
+  - Spec file: [src/homework_2/skills/empirical_fact_checking_judge/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/empirical_fact_checking_judge/skill.md)
+  - Code file: [src/homework_2/skills/empirical_fact_checking_judge/empirical_fact_checking_judge.py](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/empirical_fact_checking_judge/empirical_fact_checking_judge.py)
+- [x] **Logical Fallacy Detection Skill (`logical_fallacy_detection_judge`)**:
+  - Spec file: [src/homework_2/skills/logical_fallacy_detection_judge/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/logical_fallacy_detection_judge/skill.md)
+  - Code file: [src/homework_2/skills/logical_fallacy_detection_judge/logical_fallacy_detection_judge.py](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/logical_fallacy_detection_judge/logical_fallacy_detection_judge.py)
+- [x] **Fallacy Weighting Matrix Skill (`fallacy_weighting_matrix_judge`)**:
+  - Spec file: [src/homework_2/skills/fallacy_weighting_matrix_judge/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/fallacy_weighting_matrix_judge/skill.md)
+  - Code file: [src/homework_2/skills/fallacy_weighting_matrix_judge/fallacy_weighting_matrix_judge.py](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/fallacy_weighting_matrix_judge/fallacy_weighting_matrix_judge.py)
+- [x] **Clash-Map Tracker Skill (`clash_map_tracker_judge`)**:
+  - Spec file: [src/homework_2/skills/clash_map_tracker_judge/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/clash_map_tracker_judge/skill.md)
+  - Code file: [src/homework_2/skills/clash_map_tracker_judge/clash_map_tracker_judge.py](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/clash_map_tracker_judge/clash_map_tracker_judge.py)
+- [x] **Closing Summary Auditor Skill (`closing_summary_auditor_judge`)**:
+  - Spec file: [src/homework_2/skills/closing_summary_auditor_judge/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/closing_summary_auditor_judge/skill.md)
+  - Code file: [src/homework_2/skills/closing_summary_auditor_judge/closing_summary_auditor_judge.py](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/closing_summary_auditor_judge/closing_summary_auditor_judge.py)
+- [x] **Bias Self-Audit Skill (`bias_self_audit_judge`)**:
+  - Spec file: [src/homework_2/skills/bias_self_audit_judge/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/bias_self_audit_judge/skill.md)
+  - Code file: [src/homework_2/skills/bias_self_audit_judge/bias_self_audit_judge.py](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/bias_self_audit_judge/bias_self_audit_judge.py)
+- [x] **Persuasiveness Evaluation Skill (`persuasiveness_evaluation_judge`)**:
+  - Spec file: [src/homework_2/skills/persuasiveness_evaluation_judge/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/persuasiveness_evaluation_judge/skill.md)
+  - Code file: [src/homework_2/skills/persuasiveness_evaluation_judge/persuasiveness_evaluation_judge.py](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/persuasiveness_evaluation_judge/persuasiveness_evaluation_judge.py)
+- [x] **Tie-Breaker Resolution Skill (`tie_breaker_resolution_judge`)**:
+  - Spec file: [src/homework_2/skills/tie_breaker_resolution_judge/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/tie_breaker_resolution_judge/skill.md)
+  - Code file: [src/homework_2/skills/tie_breaker_resolution_judge/tie_breaker_resolution_judge.py](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/tie_breaker_resolution_judge/tie_breaker_resolution_judge.py)
+- [x] **Grade Justification Report Skill (`grade_justification_report_judge`)**:
+  - Spec file: [src/homework_2/skills/grade_justification_report_judge/skill.md](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/grade_justification_report_judge/skill.md)
+  - Code file: [src/homework_2/skills/grade_justification_report_judge/grade_justification_report_judge.py](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/src/homework_2/skills/grade_justification_report_judge/grade_justification_report_judge.py)
+
+---
+
+### Phase 6: Release Quality & Full System Integration
+- [x] **Test Fixtures Suite Setup**: Setup standard shared fixtures locally in [tests/conftest.py](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/tests/conftest.py). *(Assigned: AI)*
+- [x] **Automated Skills Tests**: Execute full unit test coverage suite reaching a verified **92.47% coverage** margin in [tests/unit/test_homework_2/test_skills.py](file:///Users/amirmt/Desktop/ME/Me/MSC-ComputerScience/2025-B/agent%20AI/hw2/Homework_2/tests/unit/test_homework_2/test_skills.py). *(Assigned: AI)*
+- [x] **Local Sandbox Demonstrations**: Execute sandbox integration validation scripts under private brain scratch space. *(Assigned: AI)*
