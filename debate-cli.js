@@ -72,6 +72,16 @@ function getAgentModel(persona, enableSearch = true) {
     });
 }
 
+// TTY-Safe Console Utilities to prevent crashes in non-interactive environments
+function clearConsoleLine() {
+    if (process.stdout.isTTY && typeof process.stdout.clearLine === 'function') {
+        process.stdout.clearLine(0);
+        process.stdout.cursorTo(0);
+    } else {
+        process.stdout.write('\n');
+    }
+}
+
 // Global components
 const watchdog = new Watchdog(45000); // 45 second timeout for model requests
 const gatekeeper = new Gatekeeper('gatekeeper_status.json', 0.50); // $0.50 budget limit
@@ -197,8 +207,7 @@ async function startDebate() {
         // Delay between turns to protect rate limits
         process.stdout.write(`\x1b[90mWaiting for quota (${delaySeconds}s)...\x1b[0m`);
         await new Promise(resolve => setTimeout(resolve, delaySeconds * 1000));
-        process.stdout.clearLine(0);
-        process.stdout.cursorTo(0);
+        clearConsoleLine();
 
         const isRonaldo = currentSpeaker === 'ronaldo-fan' || currentSpeaker === 'ronaldo';
         const speakerName = isRonaldo ? PERSONAS.ronaldo.name : PERSONAS.messi.name;
@@ -218,8 +227,7 @@ async function startDebate() {
         const childData = childResult.parsed;
 
         // Clear thinking line and print argument
-        process.stdout.clearLine(0);
-        process.stdout.cursorTo(0);
+        clearConsoleLine();
         console.log(`${color}\x1b[1m${speakerName}:\x1b[0m ${childData.argument}`);
         printGroundingInfo(childResult.candidate);
         console.log();
@@ -239,8 +247,7 @@ async function startDebate() {
         // Route to the Referee (Judge)
         process.stdout.write(`\x1b[90mReferee is analyzing the turn (${delaySeconds}s)...\x1b[0m`);
         await new Promise(resolve => setTimeout(resolve, delaySeconds * 1000));
-        process.stdout.clearLine(0);
-        process.stdout.cursorTo(0);
+        clearConsoleLine();
 
         console.log(`\x1b[36m\x1b[1mReferee:\x1b[0m Evaluating...`);
 
@@ -258,8 +265,7 @@ async function startDebate() {
         const refResult = await callModelWithRetry(refereeModel, refereePrompt);
         const refData = refResult.parsed;
 
-        process.stdout.clearLine(0);
-        process.stdout.cursorTo(0);
+        clearConsoleLine();
         console.log(`\x1b[36m\x1b[1mThe Referee:\x1b[0m ${refData.referee_commentary}`);
         if (refData.internal_notes?.analysis_of_last_turn) {
             console.log(`  \x1b[90m📋 [Referee Notes] ${refData.internal_notes.analysis_of_last_turn}\x1b[0m`);
@@ -273,8 +279,7 @@ async function startDebate() {
     // Debate finished. Referee issues Final Verdict.
     process.stdout.write(`\x1b[90mPreparing final verdict (${delaySeconds}s)...\x1b[0m`);
     await new Promise(resolve => setTimeout(resolve, delaySeconds * 1000));
-    process.stdout.clearLine(0);
-    process.stdout.cursorTo(0);
+    clearConsoleLine();
 
     console.log(`\x1b[36m\x1b[1mReferee:\x1b[0m Writing final verdict...`);
 
@@ -283,8 +288,7 @@ async function startDebate() {
     const finalResult = await callModelWithRetry(refereeModel, finalVerdictPrompt);
     const finalData = finalResult.parsed;
 
-    process.stdout.clearLine(0);
-    process.stdout.cursorTo(0);
+    clearConsoleLine();
     
     console.log("\n========================================================");
     console.log("⚖️  \x1b[1m\x1b[32mTHE REFEREE'S FINAL VERDICT\x1b[0m ⚖️");
