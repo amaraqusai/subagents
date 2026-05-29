@@ -8,6 +8,7 @@ const logger = require('./logger');
 const Gatekeeper = require('./gatekeeper');
 const Watchdog = require('./watchdog');
 const verifiedCache = require('./src/subagents/shared/verified_soccer_facts.json');
+const { parseModelJson, loadPersona, getSearchMetadataString, sendLongMessage } = require('./lib/utils');
 
 // Import competitor-specific _debator skills
 const TimeAllocationStrategyDebator = require('./src/subagents/skills/time_allocation_strategy_debator/time_allocation_strategy_debator');
@@ -53,27 +54,7 @@ if (process.env.GEMINI_API_KEY) {
 
 const MODEL_NAME = "gemini-2.5-flash-lite"; // Default to 2.5-flash-lite to avoid daily 2.5-flash rate limits
 
-function loadPersona(name) {
-    const filePath = path.join(__dirname, '.gemini', 'agents', `${name}.md`);
-    if (!fs.existsSync(filePath)) {
-        logger.error('DiscordBot', `Persona file not found: ${filePath}`);
-        process.exit(1);
-    }
-    const content = fs.readFileSync(filePath, 'utf8');
-    
-    const match = content.match(/---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)/);
-    if (!match) return { name: name, systemPrompt: content };
-
-    const body = match[2].trim();
-    const frontmatter = match[1];
-    const nameMatch = frontmatter.match(/name:\s*(.*)/);
-    const displayName = nameMatch ? nameMatch[1].trim() : name;
-
-    return {
-        name: displayName,
-        systemPrompt: body
-    };
-}
+// loadPersona is imported from lib/utils.js
 
 const PERSONAS = {
     ronaldo: loadPersona('ronaldo-fan'),
@@ -95,26 +76,7 @@ function getAgentModel(persona, enableSearch = true) {
 const watchdog = new Watchdog(45000); // 45 second timeout for model requests
 const gatekeeper = new Gatekeeper('gatekeeper_status.json', 0.50); // $0.50 budget limit
 
-// Clean and parse model JSON response
-function parseModelJson(text) {
-    try {
-        const startIdx = text.indexOf("{");
-        const endIdx = text.lastIndexOf("}");
-        if (startIdx === -1 || endIdx === -1) {
-            throw new Error("No JSON object characters found");
-        }
-        const jsonStr = text.substring(startIdx, endIdx + 1);
-        return JSON.parse(jsonStr);
-    } catch (err) {
-        // Fallback: strip markdown blocks
-        let cleaned = text.replace(/```json|```/g, '').trim();
-        try {
-            return JSON.parse(cleaned);
-        } catch (innerErr) {
-            throw new Error(`JSON parsing failed: ${err.message}. Response: ${text.substring(0, 100)}...`);
-        }
-    }
-}
+// parseModelJson is imported from lib/utils.js
 
 // Call model with watchdog, gatekeeper, and retry logic to avoid rate limits
 async function callModelWithRetry(model, prompt, maxRetries = 3) {
@@ -152,49 +114,10 @@ async function callModelWithRetry(model, prompt, maxRetries = 3) {
     }
 }
 
-// Format and extract search metadata for Discord output
-function getSearchMetadataString(candidate) {
-    const searchQueries = candidate?.groundingMetadata?.webSearchQueries;
-    const chunks = candidate?.groundingMetadata?.groundingChunks;
-    let metadataStr = "";
-    
-    if (searchQueries && searchQueries.length > 0) {
-        metadataStr += `*🔍 Search query: "${searchQueries.join(', ')}"\n*`;
-    }
-    if (chunks && chunks.length > 0) {
-        const domains = [...new Set(chunks.map(c => {
-            try {
-                return new URL(c.web?.uri || '').hostname.replace('www.', '');
-            } catch (e) {
-                return c.web?.title || 'Web Search';
-            }
-        }))];
-        metadataStr += `*📚 Sources: ${domains.join(', ')}*`;
-    }
-    return metadataStr;
-}
+// getSearchMetadataString is imported from lib/utils.js
 
-async function sendLongMessage(channel, content) {
-    if (content.length <= 1900) {
-        return await channel.send(content);
-    }
-    
-    const lines = content.split('\n');
-    let currentChunk = '';
-    
-    for (const line of lines) {
-        if (currentChunk.length + line.length + 1 > 1900) {
-            await channel.send(currentChunk.trim());
-            currentChunk = line + '\n';
-        } else {
-            currentChunk += line + '\n';
-        }
-    }
-    
-    if (currentChunk.trim().length > 0) {
-        await channel.send(currentChunk.trim());
-    }
-}
+// sendLongMessage is imported from lib/utils.js
+// Usage: await sendLongMessage(channel.send.bind(channel), content);
 
 let debateActive = false;
 
@@ -763,7 +686,7 @@ Respond ONLY with a raw JSON object matching the following structure:
             });
 
             // Transmit scorecard evaluation report securely splitting by 1900 chars
-            await sendLongMessage(message.channel, scorecardReport.grading_justification);
+            await sendLongMessage(message.channel.send.bind(message.channel), scorecardReport.grading_justification);
             await message.channel.send("🏁 **The Debate has officially closed!** 🏁");
 
             logger.info('DiscordBot', 'Discord debate completed successfully with local judge evaluation', { winner: finalVerdictResult.winner_id });

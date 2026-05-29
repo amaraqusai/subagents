@@ -7,6 +7,7 @@ const logger = require('./logger');
 const Gatekeeper = require('./gatekeeper');
 const Watchdog = require('./watchdog');
 const { showTerminalMenu } = require('./menu');
+const { parseModelJson, loadPersona, printGroundingInfo } = require('./lib/utils');
 const verifiedCache = require('./src/subagents/shared/verified_soccer_facts.json');
 
 // Import competitor-specific _debator skills
@@ -52,7 +53,7 @@ for (let i = 0; i < args.length; i++) {
         delaySeconds = parseInt(args[i+1], 10) || 15;
         i++;
     } else if (args[i] === '--model' || args[i] === '-m') {
-        selectedModel = args[i+1] || "gemini-2.5-flash";
+        selectedModel = args[i+1] || selectedModel; // fallback to current default (gemini-2.5-flash-lite)
         i++;
     }
 }
@@ -62,29 +63,7 @@ if (process.env.GEMINI_API_KEY) {
     genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 }
 
-// Load agent persona configurations
-function loadPersona(name) {
-    const filePath = path.join(__dirname, '.gemini', 'agents', `${name}.md`);
-    if (!fs.existsSync(filePath)) {
-        logger.error('CLI', `Persona file not found: ${filePath}`);
-        console.error(`\x1b[31m[Error] Persona file not found: ${filePath}\x1b[0m`);
-        process.exit(1);
-    }
-    const content = fs.readFileSync(filePath, 'utf8');
-    
-    const match = content.match(/---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)/);
-    if (!match) return { name: name, systemPrompt: content };
-
-    const body = match[2].trim();
-    const frontmatter = match[1];
-    const nameMatch = frontmatter.match(/name:\s*(.*)/);
-    const displayName = nameMatch ? nameMatch[1].trim() : name;
-
-    return {
-        name: displayName,
-        systemPrompt: body
-    };
-}
+// loadPersona is imported from lib/utils.js
 
 const PERSONAS = {
     ronaldo: loadPersona('ronaldo-fan'),
@@ -116,26 +95,7 @@ function clearConsoleLine() {
 const watchdog = new Watchdog(45000); // 45 second timeout for model requests
 const gatekeeper = new Gatekeeper('gatekeeper_status.json', 0.50); // $0.50 budget limit
 
-// Robust JSON extraction and parsing
-function parseModelJson(text) {
-    try {
-        const startIdx = text.indexOf("{");
-        const endIdx = text.lastIndexOf("}");
-        if (startIdx === -1 || endIdx === -1) {
-            throw new Error("No JSON object characters found");
-        }
-        const jsonStr = text.substring(startIdx, endIdx + 1);
-        return JSON.parse(jsonStr);
-    } catch (err) {
-        // Fallback: strip markdown blocks
-        let cleaned = text.replace(/```json|```/g, '').trim();
-        try {
-            return JSON.parse(cleaned);
-        } catch (innerErr) {
-            throw new Error(`JSON parsing failed: ${err.message}. Original text: ${text.substring(0, 150)}...`);
-        }
-    }
-}
+// parseModelJson and printGroundingInfo are imported from lib/utils.js
 
 // Call model with watchdog, gatekeeper, and retry mechanisms
 async function callModelWithRetry(model, prompt, maxRetries = 3) {
@@ -154,8 +114,8 @@ async function callModelWithRetry(model, prompt, maxRetries = 3) {
             });
 
             const text = result.response.text();
-            
-            // Validate JSON structure
+
+            // Validate JSON structure (uses shared parseModelJson from lib/utils.js)
             const parsed = parseModelJson(text);
 
             // Record token consumption securely in the gatekeeper
@@ -172,25 +132,6 @@ async function callModelWithRetry(model, prompt, maxRetries = 3) {
             console.log(`\x1b[90mWaiting ${waitTime / 1000}s before retrying...\x1b[0m`);
             await new Promise(resolve => setTimeout(resolve, waitTime));
         }
-    }
-}
-
-// Print grounding search query and sources if available
-function printGroundingInfo(candidate) {
-    const searchQueries = candidate?.groundingMetadata?.webSearchQueries;
-    const chunks = candidate?.groundingMetadata?.groundingChunks;
-    if (searchQueries && searchQueries.length > 0) {
-        console.log(`  \x1b[90m🔍 Search Query: "${searchQueries.join(', ')}"\x1b[0m`);
-    }
-    if (chunks && chunks.length > 0) {
-        const domains = [...new Set(chunks.map(c => {
-            try {
-                return new URL(c.web?.uri || '').hostname.replace('www.', '');
-            } catch (e) {
-                return c.web?.title || 'Web Search';
-            }
-        }))];
-        console.log(`  \x1b[90m📚 Sources: ${domains.join(', ')}\x1b[0m`);
     }
 }
 

@@ -1,25 +1,8 @@
 const test = require('node:test');
 const assert = require('node:assert');
 
-// Duplicate the parser logic to test it directly
-function parseModelJson(text) {
-    try {
-        const startIdx = text.indexOf("{");
-        const endIdx = text.lastIndexOf("}");
-        if (startIdx === -1 || endIdx === -1) {
-            throw new Error("No JSON object characters found");
-        }
-        const jsonStr = text.substring(startIdx, endIdx + 1);
-        return JSON.parse(jsonStr);
-    } catch (err) {
-        let cleaned = text.replace(/```json|```/g, '').trim();
-        try {
-            return JSON.parse(cleaned);
-        } catch (innerErr) {
-            throw new Error(`JSON parsing failed: ${err.message}`);
-        }
-    }
-}
+// Import the canonical implementation from the shared utility module
+const { parseModelJson } = require('../lib/utils');
 
 test('JSON Model Response Parser', async (t) => {
     await t.test('should parse clean JSON successfully', () => {
